@@ -1,4 +1,4 @@
-name: Auto Tag on Push
+name: Auto Tag and Release
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  create_tag:
+  create_tag_and_release:
     runs-on: ubuntu-latest
 
     permissions:
@@ -25,14 +25,32 @@ jobs:
           git config --global user.name "Kunal726"
           git config --global user.email "kunalkulthe1@gmail.com"
 
-      # Delete existing tag if it exists
-      - name: Delete existing tag
+      # Delete existing tag and release if they exist
+      - name: Delete existing tag and release
         run: |
           git tag -d v0.0.1 || true
           git push origin :refs/tags/v0.0.1 || true
+          gh release delete v0.0.1 -y || true
 
       # Create and push the tag
       - name: Create and push tag
         run: |
           git tag v0.0.1
           git push origin v0.0.1
+
+      # Create GitHub Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release v0.0.1
+          tag_name: v0.0.1
+          body: |
+            ## Changes
+            - Initial release of market-mosaic-common-lib-go
+            - Added ZooKeeper client implementation
+            - Added database configuration and initialization
+            - Added Redis client implementation
+            - Added application initialization and cleanup
+          draft: false
+          prerelease: false
+          generate_release_notes: true
