@@ -51,16 +51,16 @@ func NewApplication() (*Application, error) {
 	// Initialize tracing
 	traceProvider := tracing.InitTracer()
 
-	// Initialize database
-	database, err := db.InitDB()
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %w", err)
-	}
-
 	// Initialize ZooKeeper client
 	zkClient, err := zookeeper.NewClient(zapLogger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize ZooKeeper client: %w", err)
+	}
+
+	// Initialize database
+	database, err := db.InitDB(zkClient)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
 	// Initialize Redis configuration
