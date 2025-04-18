@@ -26,17 +26,41 @@ func NewDBConfig(zkClient *zookeeper.Client) (*DBConfig, error) {
 		return nil, fmt.Errorf("failed to get DB_CONFIG from ZooKeeper: %w", err)
 	}
 
-	configMap, ok := dbConfig.(map[string]string)
+	configMap, ok := dbConfig.(map[string]any)
 	if !ok {
-		return nil, fmt.Errorf("invalid Redis config format")
+		return nil, fmt.Errorf("invalid DB config format")
 	}
 
-	maxPoolSize, _ := strconv.Atoi(configMap["maxPoolSize"])
+	// Type assertions for each field
+	url, ok := configMap["goUrl"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid url in DB config")
+	}
+
+	username, ok := configMap["userName"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid userName in DB config")
+	}
+
+	password, ok := configMap["password"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid password in DB config")
+	}
+
+	maxPoolSizeStr, ok := configMap["maxPoolSize"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid maxPoolSize in DB config")
+	}
+
+	maxPoolSize, err := strconv.Atoi(maxPoolSizeStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid maxPoolSize value: %w", err)
+	}
 
 	return &DBConfig{
-		URL: configMap["url"],
-		Username: configMap["userName"],
-		Password : configMap["password"],
+		URL:         url,
+		Username:    username,
+		Password:    password,
 		MaxPoolSize: maxPoolSize,
 	}, nil
 }
