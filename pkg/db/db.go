@@ -1,7 +1,6 @@
 package db
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -26,12 +25,17 @@ func NewDBConfig(zkClient *zookeeper.Client) (*DBConfig, error) {
 		return nil, fmt.Errorf("failed to get DB_CONFIG from ZooKeeper: %w", err)
 	}
 
-	var config DBConfig
-	if err := json.Unmarshal([]byte(dbConfig), &config); err != nil {
-		return nil, fmt.Errorf("failed to parse DB_CONFIG: %w", err)
+	configMap, ok := dbConfig.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid Redis config format")
 	}
 
-	return &config, nil
+	return &DBConfig{
+		URL: configMap["url"].(string),
+		Username: configMap["userName"].(string),
+		Password : configMap["password"].(string),
+		MaxPoolSize: configMap["maxPoolSize"].(int),
+	}, nil
 }
 
 // InitDB initializes and returns a new database connection with connection pooling
