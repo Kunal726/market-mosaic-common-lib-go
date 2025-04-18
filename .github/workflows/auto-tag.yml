@@ -8,6 +8,9 @@ on:
 jobs:
   create_tag:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write  # Allow write access to repository content
 
     steps:
       # Check out the code
