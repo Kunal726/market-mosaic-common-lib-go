@@ -1,0 +1,34 @@
+name: Auto Tag on Push
+
+on:
+  push:
+    branches:
+      - main  # Adjust this to the branch you want to track for pushes (e.g., main, master, etc.)
+
+jobs:
+  create_tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up Git
+      - name: Set up Git
+        run: |
+          git config --global user.name "Kunal726"
+          git config --global user.email "kunalkulthe1@gmail.com"
+
+      # Get the latest commit hash
+      - name: Get the latest commit hash
+        id: commit
+        run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
+
+      # Create and push the tag based on the commit hash
+      - name: Create and push tag
+        run: |
+          tag="v0.0.1"
+          echo "Creating tag: $tag"
+          git tag $tag
+          git push origin $tag
