@@ -25,32 +25,56 @@ jobs:
           git config --global user.name "Kunal726"
           git config --global user.email "kunalkulthe1@gmail.com"
 
-      # Delete existing tag and release if they exist
-      - name: Delete existing tag and release
+      # Install GitHub CLI
+      - name: Install GitHub CLI
         run: |
-          git tag -d v0.0.1 || true
-          git push origin :refs/tags/v0.0.1 || true
-          gh release delete v0.0.1 -y || true
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh
 
-      # Create and push the tag
-      - name: Create and push tag
+      # Authenticate GitHub CLI
+      - name: Authenticate GitHub CLI
         run: |
-          git tag v0.0.1
-          git push origin v0.0.1
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      # Delete all existing tags and releases
+      - name: Delete all existing tags and releases
+        run: |
+          # Delete all local tags
+          git tag -l | xargs -n 1 git tag -d
+
+          # Delete all remote tags
+          git ls-remote --tags origin | awk '{print $2}' | xargs -n 1 git push origin :refs/tags/
+
+          # Delete all releases
+          gh release list | awk '{print $1}' | xargs -n 1 gh release delete -y || true
+
+      # Create and push the new tag
+      - name: Create and push new tag
+        run: |
+          git tag v1.0.1
+          git push origin v1.0.1
 
       # Create GitHub Release
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Release v0.0.1
-          tag_name: v0.0.1
+          name: v1.0.1
+          tag_name: v1.0.1
           body: |
             ## Changes
             - Initial release of market-mosaic-common-lib-go
-            - Added ZooKeeper client implementation
-            - Added database configuration and initialization
+            - Added ZooKeeper client implementation with common configuration support
+            - Added database configuration and initialization with connection pooling
             - Added Redis client implementation
             - Added application initialization and cleanup
+            - Added GitHub Actions workflow for automated releases
           draft: false
           prerelease: false
           generate_release_notes: true
+          files: |
+            README.md
+            LICENSE
+            go.mod
+            go.sum
