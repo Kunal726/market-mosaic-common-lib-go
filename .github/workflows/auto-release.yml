@@ -50,13 +50,7 @@ jobs:
           # Delete all releases
           gh release list | awk '{print $1}' | xargs -n 1 gh release delete -y || true
 
-      # Create and push the new tag
-      - name: Create and push new tag
-        run: |
-          git tag v1.0.3
-          git push origin v1.0.3
-
-      # Create GitHub Release
+      # Create GitHub Release with new tag
       - name: Create Release
         run: |
-          gh release create v1.0.3 --title "Release v1.0.3" --notes "Auto-generated Latest release"
+          gh release create v1.0.3 --target main --title "Release v1.0.3" --notes "Auto-generated Latest release"
