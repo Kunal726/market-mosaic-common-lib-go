@@ -3,19 +3,21 @@ name: Auto Tag on Push
 on:
   push:
     branches:
-      - main  # Adjust this to the branch you want to track for pushes (e.g., main, master, etc.)
+      - main
 
 jobs:
   create_tag:
     runs-on: ubuntu-latest
-    
+
     permissions:
-      contents: write  # Allow write access to repository content
+      contents: write
 
     steps:
       # Check out the code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for tags
 
       # Set up Git
       - name: Set up Git
@@ -23,20 +25,14 @@ jobs:
           git config --global user.name "Kunal726"
           git config --global user.email "kunalkulthe1@gmail.com"
 
-      # Step 4: Push the tag deletion to the remote repository
-      - name: Delete old tag remotely
+      # Delete existing tag if it exists
+      - name: Delete existing tag
         run: |
-          git push origin --delete v0.0.1  # Replace with your tag name
+          git tag -d v0.0.1 || true
+          git push origin :refs/tags/v0.0.1 || true
 
-      # Get the latest commit hash
-      - name: Get the latest commit hash
-        id: commit
-        run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
-
-      # Create and push the tag based on the commit hash
+      # Create and push the tag
       - name: Create and push tag
         run: |
-          tag="v0.0.1"
-          echo "Creating tag: $tag"
-          git tag $tag
-          git push origin $tag
+          git tag v0.0.1
+          git push origin v0.0.1
