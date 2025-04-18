@@ -45,7 +45,7 @@ jobs:
           git tag -l | xargs -n 1 git tag -d
 
           # Delete all remote tags
-          git ls-remote --tags origin | awk '{print $2}' | xargs -n 1 git push origin :refs/tags/
+          git ls-remote --tags origin | awk '{print ":" $2}' | xargs -n 1 git push origin
 
           # Delete all releases
           gh release list | awk '{print $1}' | xargs -n 1 gh release delete -y || true
