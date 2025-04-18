@@ -21,7 +21,7 @@ type DBConfig struct {
 
 // NewDBConfig creates a new DBConfig from ZooKeeper configuration
 func NewDBConfig(zkClient *zookeeper.Client) (*DBConfig, error) {
-	dbConfig, err := zkClient.GetStringValueByKey("DB_CONFIG")
+	dbConfig, err := zkClient.GetConfigValueByKey("DB_CONFIG")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get DB_CONFIG from ZooKeeper: %w", err)
 	}
