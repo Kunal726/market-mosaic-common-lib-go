@@ -1,0 +1,62 @@
+name: Auto Tag and Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create_tag_and_release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      # Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for tags
+
+      # Set up Git
+      - name: Set up Git
+        run: |
+          git config --global user.name "Kunal726"
+          git config --global user.email "kunalkulthe1@gmail.com"
+
+      # Install GitHub CLI
+      - name: Install GitHub CLI
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh
+
+      # Authenticate GitHub CLI
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      # Delete all existing tags and releases
+      - name: Delete all existing tags and releases
+        run: |
+          # Delete all local tags
+          git tag -l | xargs -n 1 git tag -d
+
+          # Delete all remote tags
+          git ls-remote --tags origin | awk '{print ":" $2}' | xargs -n 1 git push origin
+
+          # Delete all releases
+          gh release list | awk '{print $1}' | xargs -n 1 gh release delete -y || true
+
+      # Create and push the new tag
+      - name: Create and push new tag
+        run: |
+          git tag v1.0.3
+          git push origin v1.0.3
+
+      # Create GitHub Release
+      - name: Create Release
+        run: |
+          gh release create v1.0.3 --title "Release v1.0.3" --notes "Auto-generated Latest release"
