@@ -53,15 +53,15 @@ jobs:
       # Create and push the new tag
       - name: Create and push new tag
         run: |
-          git tag v1.0.1
-          git push origin v1.0.1
+          git tag v1.0.3
+          git push origin v1.0.3
 
       # Create GitHub Release
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: v1.0.1
-          tag_name: v1.0.1
+          name: v1.0.3
+          tag_name: v1.0.3
           body: |
             ## Changes
             - Initial release of market-mosaic-common-lib-go
