@@ -20,11 +20,6 @@ jobs:
           git config --global user.name "Kunal726"
           git config --global user.email "kunalkulthe1@gmail.com"
 
-        # Step 3: Delete the old tag locally (if it exists)
-      - name: Delete old tag locally
-        run: |
-          git tag -d v0.0.1  # Replace with your tag name
-
       # Step 4: Push the tag deletion to the remote repository
       - name: Delete old tag remotely
         run: |
