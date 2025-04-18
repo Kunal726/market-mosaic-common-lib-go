@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Kunal726/market-mosaic-common-lib-go/pkg/zookeeper"
@@ -25,16 +26,18 @@ func NewDBConfig(zkClient *zookeeper.Client) (*DBConfig, error) {
 		return nil, fmt.Errorf("failed to get DB_CONFIG from ZooKeeper: %w", err)
 	}
 
-	configMap, ok := dbConfig.(map[string]any)
+	configMap, ok := dbConfig.(map[string]string)
 	if !ok {
 		return nil, fmt.Errorf("invalid Redis config format")
 	}
 
+	maxPoolSize, _ := strconv.Atoi(configMap["maxPoolSize"])
+
 	return &DBConfig{
-		URL: configMap["url"].(string),
-		Username: configMap["userName"].(string),
-		Password : configMap["password"].(string),
-		MaxPoolSize: configMap["maxPoolSize"].(int),
+		URL: configMap["url"],
+		Username: configMap["userName"],
+		Password : configMap["password"],
+		MaxPoolSize: maxPoolSize,
 	}, nil
 }
 
