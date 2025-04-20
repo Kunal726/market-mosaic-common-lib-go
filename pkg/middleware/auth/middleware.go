@@ -1,16 +1,25 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Kunal726/market-mosaic-common-lib-go/pkg/auth"
+	"github.com/Kunal726/market-mosaic-common-lib-go/pkg/zookeeper"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	pb "github.com/Kunal726/market-mosaic-common-lib-go/proto"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 // Middleware handles token validation and user context
@@ -132,4 +141,68 @@ func MustGetUserFromContext(c *gin.Context) *auth.TokenValidationResponse {
 		panic(auth.ErrUserNotFoundInContext)
 	}
 	return user
+}
+
+
+// ValidateToken middleware validates the token and sets user context
+func (m *Middleware) ValidateTokenGrpc(zkClient *zookeeper.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Check if we're in development mode
+		if m.isDevelopmentMode() {
+			m.logger.Info("Running in development mode - using mock authentication")
+			c.Set(auth.UserContextKey, m.createMockUser())
+			c.Next()
+			return
+		}
+
+		token, err := m.extractToken(c)
+
+		if err != nil {
+			m.logger.Error("Failed to extract token", zap.Error(err))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": auth.ErrNoTokenProvided,
+			})
+			return
+		}
+
+		authServiceUrl, err := zkClient.GetStringValueByKey("AUTH_SERV_URL", true)
+		if err != nil {
+			authServiceUrl = "localhost:8081"
+			m.logger.Error("Unable to get Auth Srevice Url From Congig", zap.Error(err))
+		}
+
+		conn, err := grpc.NewClient(authServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to Connect Auth Servers"})
+			return
+		}
+		defer conn.Close()
+
+		client := pb.NewAuthServiceClient(conn)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		md := metadata.Pairs("Cookie", auth.JWTCookieName + "=" + token)
+		ctx = metadata.NewOutgoingContext(ctx, md)
+
+		resp, err := client.ValidateToken(ctx, &pb.TokenRequest{})
+
+		if err != nil || !resp.Valid {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			return
+		}
+
+		if !resp.Valid {
+			m.logger.Error("Token is invalid")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": auth.ErrInvalidToken,
+			})
+			return
+		}
+
+		c.Set(auth.UserContextKey, resp)
+		c.Next()
+	}
 }

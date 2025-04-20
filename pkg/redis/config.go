@@ -17,7 +17,7 @@ type Config struct {
 
 // NewConfig creates a new Redis configuration from ZooKeeper
 func NewConfig(zkClient *zookeeper.Client, logger *zap.Logger) (*Config, error) {
-	redisConfig, err := zkClient.GetConfigValueByKey("REDIS_CONFIG")
+	redisConfig, err := zkClient.GetConfigValueByKey("REDIS_CONFIG", true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Redis config from ZooKeeper: %w", err)
 	}

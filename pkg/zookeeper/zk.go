@@ -107,8 +107,8 @@ func (c *Client) startConfigRefresh() {
 }
 
 // GetStringValueByKey retrieves a string value from service configuration
-func (c *Client) GetStringValueByKey(key string) (string, error) {
-	value, exists := c.cache.GetServiceConfig(key)
+func (c *Client) GetStringValueByKey(key string, isCommon bool) (string, error) {
+	value, exists := c.cache.GetConfig(isCommon, key)
 	if !exists {
 		return "", fmt.Errorf("key %s not found in configuration", key)
 	}
@@ -120,8 +120,8 @@ func (c *Client) GetStringValueByKey(key string) (string, error) {
 }
 
 // GetConfigValueByKey retrieves a configuration value from common configuration
-func (c *Client) GetConfigValueByKey(key string) (any, error) {
-	value, exists := c.cache.GetCommonConfig(key)
+func (c *Client) GetConfigValueByKey(key string, isCommon bool) (any, error) {
+	value, exists := c.cache.GetConfig(isCommon, key)
 	if !exists {
 		return nil, fmt.Errorf("key %s not found in common configuration", key)
 	}

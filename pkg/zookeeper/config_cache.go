@@ -66,7 +66,7 @@ func (cc *ConfigCache) UpdateCommonConfig(data []byte) error {
 }
 
 // GetServiceConfig retrieves a value from service configuration
-func (cc *ConfigCache) GetServiceConfig(key string) (any, bool) {
+func (cc *ConfigCache) getServiceConfig(key string) (any, bool) {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
 	value, exists := cc.serviceConfig[key]
@@ -74,9 +74,22 @@ func (cc *ConfigCache) GetServiceConfig(key string) (any, bool) {
 }
 
 // GetCommonConfig retrieves a value from common configuration
-func (cc *ConfigCache) GetCommonConfig(key string) (any, bool) {
+func (cc *ConfigCache) getCommonConfig(key string) (any, bool) {
 	cc.mu.RLock()
 	defer cc.mu.RUnlock()
 	value, exists := cc.commonConfig[key]
 	return value, exists
+}
+
+// GetConfig retrieves a config based on type
+func (cc *ConfigCache) GetConfig(isCommon bool, key string) (any, bool) {
+	cc.mu.RLock()
+	defer cc.mu.RUnlock()
+
+	if isCommon {
+		return cc.getCommonConfig(key)
+	}
+	
+	return cc.getServiceConfig(key)
+
 }

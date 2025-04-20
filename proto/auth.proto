@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/Kunal726/market-mosaic-common-lib-go/proto;auth";
+
+service AuthService {
+  rpc ValidateToken (TokenRequest) returns (TokenResponse);
+}
+
+message TokenRequest {}
+
+message TokenResponse {
+  bool valid = 1;
+  string username = 2;
+  int64 userId = 3;
+  string email = 4;
+  string name = 5;
+  repeated string authorities = 6;
+}

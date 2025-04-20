@@ -41,13 +41,13 @@ func GetInstance() *ConfigManager {
 }
 
 // GetStringValueByKey retrieves a string value from service configuration
-func (cm *ConfigManager) GetStringValueByKey(key string) (string, error) {
-	return cm.zkClient.GetStringValueByKey(key)
+func (cm *ConfigManager) GetStringValueByKey(key string, isCommon bool) (string, error) {
+	return cm.zkClient.GetStringValueByKey(key, isCommon)
 }
 
 // GetConfigValueByKey retrieves a configuration value from common configuration
-func (cm *ConfigManager) GetConfigValueByKey(key string) (interface{}, error) {
-	return cm.zkClient.GetConfigValueByKey(key)
+func (cm *ConfigManager) GetConfigValueByKey(key string, isCommon bool) (interface{}, error) {
+	return cm.zkClient.GetConfigValueByKey(key, isCommon)
 }
 
 // RefreshData manually triggers a refresh of the configurations
