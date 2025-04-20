@@ -82,8 +82,8 @@ func InitDB(zkClient *zookeeper.Client) (*gorm.DB, error) {
 	}
 
 	// Create MySQL DSN
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		config.Username, config.Password, config.URL, "your_db_name")
+	dsn := fmt.Sprintf("%s:%s@tcp%s?charset=utf8mb4&parseTime=True&loc=Local",
+		config.Username, config.Password, config.URL)
 
 	// Open database connection with connection pooling
 	db, err := gorm.Open(mysql.New(mysql.Config{
