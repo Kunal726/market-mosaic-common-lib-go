@@ -53,4 +53,4 @@ jobs:
       # Create GitHub Release with new tag
       - name: Create Release
         run: |
-          gh release create v1.0.4 --target main --title "Release v1.0.4" --notes "Auto-generated Latest release"
+          gh release create v1.0.5 --target main --title "Release v1.0.5" --notes "Auto-generated Latest release"
