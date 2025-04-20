@@ -124,18 +124,18 @@ func (m *Middleware) ValidateToken() gin.HandlerFunc {
 }
 
 // GetUserFromContext retrieves the user from the context
-func GetUserFromContext(c *gin.Context) (*auth.TokenValidationResponse, bool) {
+func GetUserFromContext(c *gin.Context) (*pb.TokenResponse, bool) {
 	user, exists := c.Get(auth.UserContextKey)
 	if !exists {
 		return nil, false
 	}
 
-	validationResp, ok := user.(*auth.TokenValidationResponse)
+	validationResp, ok := user.(*pb.TokenResponse)
 	return validationResp, ok
 }
 
 // MustGetUserFromContext retrieves the user from the context or panics if not found
-func MustGetUserFromContext(c *gin.Context) *auth.TokenValidationResponse {
+func MustGetUserFromContext(c *gin.Context) *pb.TokenResponse {
 	user, exists := GetUserFromContext(c)
 	if !exists {
 		panic(auth.ErrUserNotFoundInContext)
@@ -167,7 +167,7 @@ func (m *Middleware) ValidateTokenGrpc(zkClient *zookeeper.Client) gin.HandlerFu
 
 		authServiceUrl, err := zkClient.GetStringValueByKey("AUTH_SERV_URL", true)
 		if err != nil {
-			authServiceUrl = "localhost:8081"
+			authServiceUrl = "localhost:9090"
 			m.logger.Error("Unable to get Auth Srevice Url From Congig", zap.Error(err))
 		}
 
